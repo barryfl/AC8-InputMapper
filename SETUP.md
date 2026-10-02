@@ -37,7 +37,7 @@ Disable older UE4SS-based HOTAS setups if installed. Disabling a Lua mod alone d
 
 ## 3. Find controller InstanceGUIDs
 
-Connect the stick and throttle. With AC8 closed, run `tools\List-Controllers.cmd` from the release package.
+Connect the stick and throttle. With AC8 closed, run `List-Controllers.cmd` from the release package.
 
 The utility displays controller names, InstanceGUID, ProductGUID, button counts and available axes, and writes `controllers.txt` beside itself.
 
