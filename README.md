@@ -85,4 +85,4 @@ Copyright © 2026 Fred Barry.
 
 ---
 
-Created by **Fred Barry**. I also write fantasy as **F. Lee Cooper** — [fleecooper.just-serendipity.com](https://fleecooper.just-serendipity.com).
+Created by **Fred Barry**. I do, and write about Computer Security, https://www.amazon.com/Cybersecurity-Everyday-Life-Computer-Security-ebook/dp/B0H61FWMCD/ref=sr_1_1?s=books&sr=1-1. If that's not your speed, I also write fantasy as **F. Lee Cooper** — [fleecooper.just-serendipity.com](https://fleecooper.just-serendipity.com).
