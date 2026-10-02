@@ -11,7 +11,7 @@ AC8 InputMapper translates two DirectInput controllers into the game's existing 
 
 The 0.1.0 experimental build has been tested with:
 
-- VIRPIL WarBRD stick
+- VIRPIL WarBRD base with Constellation Alpha grip.
 - VIRPIL MongoosT-50CM3 throttle
 - ACE COMBAT 8 menus and in-flight controls
 
