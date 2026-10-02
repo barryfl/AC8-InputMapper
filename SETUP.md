@@ -3,6 +3,17 @@
 > [!WARNING]
 > **Experimental — offline single-player only.** The current build is an in-process DirectInput DLL and has not been approved for Easy Anti-Cheat protected play. Do not return to protected/online play with the compatibility DLL installed.
 
+## Upgrading from the early alpha
+
+For an existing working two-device configuration:
+
+1. Close AC8 and back up your current DLL and INI outside the game folder.
+2. In `Game\Binaries\Win64`, rename **`AC8HOTAS.ini` to `AC8InputMapper.ini`** if you still use the old filename.
+3. Replace `dinput8.dll` with the new version. **Keep your existing INI contents; do not overwrite them with the blank release template.**
+4. Launch using your existing working offline settings. No new GUID lookup, binding changes, preflight, or `Version=2` change is required for the same two devices. `Version=1` remains supported.
+
+Your existing offline JSON filename and Steam launch options can stay unchanged if they already work. If you choose to rename the offline JSON, update the launch option to match. Use `Version=2` only when adding additional devices.
+
 ## 1. Offline launch configuration
 
 If you already have a working offline launch setup, retain it.

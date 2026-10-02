@@ -24,6 +24,17 @@ The mapper retains two distinct anchor devices and the same **19 output actions*
 
 The current build maps those inputs onto AC8's native X56 control channels. Stock X56 context aliases are preserved—for example, Gun also acts as menu confirm and MSL as menu back.
 
+## Upgrading from the early alpha
+
+For an existing working two-device configuration:
+
+1. Close AC8 and back up your current DLL and INI outside the game folder.
+2. In `Game\Binaries\Win64`, rename **`AC8HOTAS.ini` to `AC8InputMapper.ini`** if you still use the old filename.
+3. Replace `dinput8.dll` with the new version. **Keep your existing INI contents; do not overwrite them with the blank release template.**
+4. Launch using your existing working offline settings. No new GUID lookup, binding changes, preflight, or `Version=2` change is required for the same two devices. `Version=1` remains supported.
+
+Your existing offline JSON filename and Steam launch options can stay unchanged if they already work. If you choose to rename the offline JSON, update the launch option to match. Use `Version=2` only when adding additional devices.
+
 ## Quick start
 
 1. Read **[SETUP.md](SETUP.md)** before installing.

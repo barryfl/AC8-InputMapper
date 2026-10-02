@@ -11,6 +11,17 @@ This is the current in-process DLL method, not the proposed external HID driver.
 Use it only for offline single-player with anti-cheat client protection disabled.
 The method has not been approved for EAC-protected play.
 
+UPGRADING FROM THE EARLY ALPHA
+
+With AC8 closed, back up your current DLL and INI outside the game folder.
+In Game\Binaries\Win64, rename AC8HOTAS.ini to AC8InputMapper.ini if it still
+has the old filename, then replace dinput8.dll. Keep your existing INI contents;
+do NOT overwrite your working bindings with the blank release template.
+Version=1 remains supported for the same two devices. No new GUID lookup,
+binding changes or preflight are required. Use Version=2 only to add devices.
+Keep your existing working offline JSON filename and Steam launch options.
+If you choose to rename the JSON, update its launch option to match.
+
 1. SET UP OFFLINE LAUNCHING
 
 The offline procedure below comes from the separate AC8HOTAS mod author's
