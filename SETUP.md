@@ -9,7 +9,7 @@ If you already have a working offline launch setup, retain it.
 
 The following procedure is based on community-documented offline AC8 mod setup. It is not an assurance from EAC or Bandai Namco.
 
-With AC8 closed, use Steam's **Manage → Browse local files** to open the installation root. In the `EasyAntiCheat` folder, duplicate `Settings.json` as `AC8HOTAS_Offline.json`. Leave the original intact.
+With AC8 closed, use Steam's **Manage → Browse local files** to open the installation root. In the `EasyAntiCheat` folder, duplicate `Settings.json` as `AC8InputMapper_Offline.json`. Leave the original intact.
 
 In the duplicate, add this top-level JSON entry:
 
@@ -22,7 +22,7 @@ If the key already exists, change its value rather than duplicating it.
 In **Steam → ACE COMBAT 8 → Properties → General → Launch Options**, save any previous options and enter:
 
 ```text
-cmd /d /c "set EOS_USE_ANTICHEATCLIENTNULL=1&& %command% -anticheat_settings=AC8HOTAS_Offline.json"
+cmd /d /c "set EOS_USE_ANTICHEATCLIENTNULL=1&& %command% -anticheat_settings=AC8InputMapper_Offline.json"
 ```
 
 Use this setup only for offline campaign/free flight. If offline launching fails, stop and inspect the configuration rather than launching protected play with the compatibility DLL present.
@@ -37,7 +37,7 @@ Disable older UE4SS-based HOTAS setups if installed. Disabling a Lua mod alone d
 
 ## 3. Find controller InstanceGUIDs
 
-Connect the stick and throttle. With AC8 closed, run `List-Controllers.cmd` from the release package.
+Connect the stick, throttle and any additional configured devices. With AC8 closed, run `tools\List-Controllers.cmd` from the release package.
 
 The utility displays controller names, InstanceGUID, ProductGUID, button counts and available axes, and writes `controllers.txt` beside itself.
 
@@ -51,12 +51,12 @@ Copy only these runtime files into `Game\Binaries\Win64`:
 
 ```text
 dinput8.dll
-AC8HOTAS.ini
+AC8InputMapper.ini
 ```
 
 No UE4SS or Lua files are required by this runtime.
 
-## 5. Configure AC8HOTAS.ini
+## 5. Configure AC8InputMapper.ini
 
 Set each device once:
 
@@ -79,21 +79,39 @@ Buttons use `ButtonN`. Axes use `X`, `Y`, `Z`, `Rx`, `Ry`, or `Rz`; prefix with 
 
 Current limitations: D-pad bindings require `ButtonN` inputs; native POV tokens and Slider1/Slider2 are not supported. Actions cannot yet move freely between stick/throttle sections. Two distinct device InstanceGUIDs are required.
 
-After replacing both GUID placeholders and configuring bindings, set `Enabled=1` under `[Compatibility]`. Leave `Version=1`.
+After replacing both GUID placeholders and configuring bindings, set `Enabled=1` under `[Compatibility]`. Existing `Version=1` INIs remain supported. Use `Version=2` for additional input devices.
+
+To add rudder pedals, set the old stick `Yaw=None` or remove that entry, then add:
+
+```ini
+[Device.Pedals]
+InstanceGUID={YOUR-PEDALS-INSTANCE-GUID}
+
+[Device.Pedals.Bindings]
+Yaw=Z
+```
+
+Use the actual pedal axis, not necessarily Z. The action/button/axis syntax is unchanged. One active source per action; duplicate assignments reject the INI. Additional devices can feed either game-facing role. See **[MULTI-DEVICE.txt](MULTI-DEVICE.txt)** for button-box examples, axis-carrier requirements and failure/recovery behavior.
+
+When updating, preserve your assignments and save them as `AC8InputMapper.ini`. The source template is `AC8InputMapper.example.ini`; the release ZIP supplies a blank, disabled runtime INI.
 
 Restart AC8 after every INI change.
 
 ## 6. First test
 
-For the first test, disconnect other natively supported HOTAS devices to avoid overlapping input.
+For the first test, disconnect unconfigured natively supported HOTAS devices to avoid overlapping input.
 
 At the menu, test confirm/back and mapped D-pad directions. In flight, verify pitch, roll, yaw, throttle endpoints, Target, Weapon, Gun, MSL, View and camera axes.
 
 The stock X56 profile has context-dependent aliases: Gun also confirms menus, MSL also backs out, and D-pad directions share hat channels. AC8 InputMapper preserves those aliases.
 
+For 0.2, first verify your unchanged two-device configuration. Then check pedal yaw, simultaneous pitch/roll, that old stick yaw is ignored, and Alt-Tab recovery. Additional-device disconnect/reconnect testing remains pending; restart the game after hardware changes if recovery fails.
+
 ## 7. Logs
 
 Each launch creates `ac8-compat-<PID>-<QPC>.log` beside `dinput8.dll`.
+
+Check both anchor roles for `ready=1` and `game_format=1`. Additional sources report `AdditionalSource` readiness and `AdditionalState` axes/buttons. Failed reads or focus loss neutralize extra input instead of retaining stale values.
 
 For troubleshooting, retain the log and describe the physical input and visible game response. Logs may contain controller/device identity information; review them before sharing.
 

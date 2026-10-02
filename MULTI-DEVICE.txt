@@ -1,0 +1,101 @@
+AC8 INPUTMAPPER 0.2.0-EXPERIMENTAL: ADDITIONAL INPUT DEVICES
+
+Your action names and ButtonN / X / Y / Z / Rx / Ry / Rz syntax do not change.
+Each additional device is identified once, then gets its own binding section.
+The mapper still uses the same X56 stick and throttle identities for AC8.
+
+Existing Version=1 configurations remain supported without edits. To add a
+third device, use Version=2 under [Compatibility] and keep your existing
+[Stick] and [Throttle] GUIDs and bindings. Those two physical devices remain
+required as the anchors for the game-facing controllers.
+
+EXAMPLE: MOVE YAW TO RUDDER PEDALS
+
+1. Run tools\List-Controllers.cmd outside the game folder with pedals connected.
+   Copy the pedals' InstanceGUID, and check which axis moves in joy.cpl or your
+   controller software. Z below is only an example, not a universal pedal axis.
+2. Set Version=2. In [Stick.Bindings], set Yaw=None or delete its Yaw entry.
+3. Append these sections, replacing the placeholder with your actual GUID:
+
+   [Device.Pedals]
+   InstanceGUID={YOUR-PEDALS-INSTANCE-GUID}
+
+   [Device.Pedals.Bindings]
+   Yaw=Z
+
+   Use Yaw=-Z if the direction is reversed.
+4. Keep your other assignments and Enabled=1. Restart AC8 normally using your
+   established offline single-player launch setup. No preflight script is needed.
+
+EXAMPLE: ADD A BUTTON BOX
+
+Remove Gun from [Stick.Bindings] and Pause from [Throttle.Bindings], or set
+both to None, then append:
+
+   [Device.ButtonBox]
+   InstanceGUID={YOUR-BUTTON-BOX-INSTANCE-GUID}
+
+   [Device.ButtonBox.Bindings]
+   Gun=Button1
+   Pause=Button2
+
+These still become the existing Gun and Pause channels on their respective
+X56 roles. An additional device's section can contain any of the existing 19
+actions, including actions going to different game-facing roles. No new AC8
+actions or output channels have been added.
+
+RULES AND LIMITATIONS
+
+- Up to 14 additional physical devices (16 sources including both anchors).
+- Device names: 1-32 ASCII letters, digits or underscores. Names are case
+  insensitive; Stick and Throttle are reserved.
+- Each InstanceGUID must be distinct. Do not reopen an anchor as an extra source.
+- One active source per action. Duplicate active assignments reject the INI.
+  None does not conflict with a binding under another device, in either order.
+- Existing Stick.Bindings and Throttle.Bindings retain their role-specific keys.
+  Moving an action between those two anchor sections is not implemented.
+- Axes X/Y/Z/Rx/Ry/Rz must be absolute. Buttons are Button1 through Button128.
+  Native POV and slider tokens are still unsupported.
+- An externally supplied axis needs an otherwise-unused physical axis object on
+  its destination anchor. This preserves AC8's existing capability/range setup.
+  The VIRPIL stick's Z object can carry pedal yaw metadata after local Yaw is
+  removed. A destination with too few axis objects fails readiness rather than
+  inventing a driver object; check ready=0 in the log.
+- Devices used solely as additional sources are filtered out of this proxy's
+  DirectInput enumeration while active. Windows enumeration, other applications
+  and the original TM API are unchanged. Other native input paths can still
+  recognize supported controllers; disconnect unconfigured supported devices
+  for the initial test. This is not a system-wide virtual controller driver.
+- Source snapshots are reused for at most two milliseconds between game reads.
+  The game-facing anchor's successful state read triggers additional sampling.
+  No worker thread is used. Driver calls run on the game input-read thread;
+  retry counts are bounded, but native driver call duration cannot be guaranteed.
+- Additional devices use foreground, nonexclusive acquisition. Focus loss or a
+  failed read clears that source's contribution: axes centered, buttons released.
+  There is no silent fallback to the old stick yaw and no held-last-value state.
+  A missing external throttle axis would be centered, not guaranteed idle; avoid
+  assigning throttle to a removable extra device without testing this behavior.
+- Reacquisition is bounded to two attempts per sample. Absent/setup-failed
+  sources retry creation at most once per second. Disconnect/reconnect recovery
+  is attempted for extra devices but remains unvalidated on real hardware;
+  anchor hotplug remains unvalidated. Restart AC8 after hardware/config changes.
+
+LIVE TEST STILL REQUIRED
+
+First test 0.2 using your existing two-device INI to confirm the baseline.
+Then configure pedals. In expert controls, check centered rudder, full left and
+right, simultaneous stick pitch/roll plus pedals, and verify the stick's old
+yaw no longer affects yaw. Alt-Tab away and back, check recovery and that input
+from another application does not persist into AC8. If safe on your hardware,
+check unplug/replug while parked; centered output is the expected failure mode.
+Quit normally and retain ac8-compat-<PID>-<QPC>.log beside dinput8.dll.
+
+Look for build=0.2.0-experimental, both anchor ready=1/game_format=1, the correct
+AdditionalSource names, and ready=1 for each source when the game has focus.
+AdditionalState records each source's axes and one-based pressed buttons, on
+change or every two seconds. ready=0/hr reports an absent control, setup
+failure, acquisition denial or read failure. Neutral extra input before the game establishes its window is normal.
+
+Local mock tests cover routing, failure neutrality, focus, retries and cleanup.
+They do not establish real-hardware or in-flight success of this new version.
+Offline single-player only. EAC compatibility is NOT validated or approved.

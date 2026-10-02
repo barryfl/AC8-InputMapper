@@ -1,0 +1,187 @@
+AC8 INPUTMAPPER: USER SETUP
+
+This method translates a physical stick, throttle and optional additional
+controllers into AC8's existing two X56 input roles. Configuration uses action names and physical button numbers.
+UE4SS, mapper.lua and F5/F6 are not used. Restart AC8 after changing the INI.
+
+Status: the supplied VIRPIL pair has worked in menus and flight. Its successful
+capture validates the 0.1 translated states. The 0.2 additional-device path
+has passed local tests but still needs live hardware validation.
+This is the current in-process DLL method, not the proposed external HID driver.
+Use it only for offline single-player with anti-cheat client protection disabled.
+The method has not been approved for EAC-protected play.
+
+1. SET UP OFFLINE LAUNCHING
+
+The offline procedure below comes from the separate AC8HOTAS mod author's
+published AC8 HOTAS Support installation page:
+https://www.nexusmods.com/acecombat8wingsoftheve/mods/8
+It is a community-documented offline setup, not an assurance from EAC/Bandai.
+
+If your existing offline launch setup works, retain it. Otherwise, with AC8
+closed, use Steam's Manage > Browse local files to open the installation root.
+In its EasyAntiCheat folder, duplicate Settings.json as AC8InputMapper_Offline.json.
+Leave Settings.json intact. In the duplicate, add this top-level JSON entry:
+
+    "allow_null_client": "true"
+
+Separate it from the preceding entry with a comma. If that key already exists,
+change its value instead of duplicating it. Save with the .json extension.
+
+Open AC8's Steam Properties > General > Launch Options. Save any previous
+options, then enter this single line (including the quotes):
+
+cmd /d /c "set EOS_USE_ANTICHEATCLIENTNULL=1&& %command% -anticheat_settings=AC8InputMapper_Offline.json"
+
+Launch through Steam using this setup for offline campaign/free flight only.
+This requests the null anti-cheat client; it does not uninstall the EAC service.
+An EAC bootstrapper/window may still appear. If offline launching fails, stop
+and inspect the JSON/path/launch settings; do not fall back to protected launching
+with our DLL present. The controller log alone cannot certify EAC's runtime state.
+
+2. LOCATE THE GAME'S DLL FOLDER AND BACK UP EXISTING FILES
+
+From the installation root, open Game\Binaries\Win64.
+Use Steam to locate your installation; drive letters vary.
+
+Close the game before making changes. If dinput8.dll is already there, identify
+what installed it and save a backup outside the game folder. Our DLL cannot
+share that filename with another DirectInput proxy/mod loader.
+
+Disable the old UE4SS-based AC8HOTAS/AC8AnalogYaw setup. In our research setup,
+renaming its dwmapi.dll loader to dwmapi.dll.disable prevented it from loading.
+Disabling one Lua mod alone does not unload UE4SS. Check any other loader you use.
+
+3. OBTAIN YOUR CONTROLLERS' INSTANCE GUIDS
+
+Connect the stick, throttle and any additional devices you want to use. With AC8 closed, open this
+release package's tools folder and double-click List-Controllers.cmd.
+Keep List-Controllers.exe in the same folder as that command file.
+
+The tool displays connected controller names, InstanceGUID, ProductGUID,
+button counts and available axes. It also writes controllers.txt beside itself.
+It needs neither administrator privileges nor UE4SS. It does not launch AC8,
+acquire controllers, read live input, or change game files. It loads Windows'
+system DirectInput DLL rather than the compatibility proxy.
+
+Find your stick by name and copy its entire InstanceGUID, including braces.
+Repeat for the throttle. Use InstanceGUID, NOT ProductGUID, a VID/PID pair,
+a Device Manager hardware ID, or a Steam controller identifier.
+
+If two devices have indistinguishable names, disconnect one, rerun the tool,
+identify the remaining device, then reconnect both and run it again. Use the
+final connected inventory. Windows can change instance identity after device
+reinstallation or USB rearrangement; rerun inventory if an assignment stops.
+
+joy.cpl is useful for physical button identification, but it does not give you
+the required DirectInput instance GUID. Run joy.cpl with Win+R to open Windows'
+controller test panel. Our INI is one-based: its first button is Button1.
+Some other tools show zero-based indices; index 0 corresponds to Button1.
+For high-numbered buttons not displayed by joy.cpl, use your controller software
+or a suitable DirectInput viewer and check its numbering convention.
+
+4. COPY THE TWO RUNTIME FILES
+
+Copy this release's dinput8.dll and AC8InputMapper.ini into Game\Binaries\Win64.
+The INI starts disabled and unbound. Enter your own GUIDs and assignments before
+enabling it. When updating, preserve your existing assignments. If migrating
+from an earlier package, rename its INI to AC8InputMapper.ini.
+
+Those are the only two new game runtime files. List-Controllers.exe stays
+outside the game folder. No renamed Windows dinput8.dll, UE4SS or Lua files
+are required. The TM bridge and companion can remain their original shipped
+versions; our earlier TM instrumentation proxy is not a runtime dependency.
+
+5. EDIT AC8InputMapper.ini IN A TEXT EDITOR
+
+In [Stick], replace InstanceGUID with your stick's copied instance GUID.
+In [Throttle], replace InstanceGUID with your throttle's copied instance GUID.
+Each device is identified once; bindings do not repeat GUIDs.
+
+Assign buttons in [Stick.Bindings] or [Throttle.Bindings] by physical number.
+Example: Gun=Button2 and MSL=Button12. MSL means Missile.
+Assign axes by available token: X, Y, Z, Rx, Ry or Rz.
+Examples: Roll=X, Pitch=-Y, Yaw=Z, Throttle=Rx.
+A leading minus sign reverses the requested action's axis direction; it already
+accounts for the stock profile's conversion. Do not compensate for X56 settings
+yourself. Use None to leave an action unassigned.
+
+Use only axes shown in your controller inventory. The example names are not
+universal: a different throttle may expose its lever as Z instead of Rx.
+One source axis cannot serve two different axis assignments on the same role.
+Missing anchor controls block translation for that role. Missing additional
+source controls instead neutralize that source; see MULTI-DEVICE.txt. Unknown sections,
+keys or malformed values reject the configuration. Do not add arbitrary actions.
+
+The existing two anchor sections retain these role-specific keys (Versions 1 and 2):
+
+Stick buttons:
+Gun, MSL, Weapon, Target, View, DPadUp, DPadRight, DPadDown, DPadLeft
+Stick axes:
+Pitch, Roll, Yaw, CameraPitch, CameraYaw
+Throttle buttons:
+Radar, Flare, AutoPilot, Pause
+Throttle axis:
+Throttle
+
+The DPad bindings currently need ButtonN inputs, including hats exposed as
+buttons. Native POV tokens and Slider1/Slider2 are not supported by this build.
+Actions cannot yet be moved freely between stick/throttle sections. Two distinct
+device instance GUIDs are required; a combined single-device HOTAS is not covered.
+
+After replacing both GUID placeholders and setting your bindings, change
+Enabled=0 to Enabled=1 under [Compatibility]. Save as AC8InputMapper.ini, not .ini.txt.
+Version=1 remains supported for old INIs. Use Version=2 for additional devices
+and see MULTI-DEVICE.txt; it keeps the same action/button/axis binding syntax.
+Windows Explorer's file-extension display helps avoid mistakes.
+
+6. FIRST LAUNCH AND INPUT CHECK
+
+Connect all configured devices before launching. Disconnect unconfigured
+supported HOTAS units for the first test to avoid overlapping native inputs.
+Start through Steam with the offline launch setup from step 1. Select expert
+flight controls when checking independent pitch, roll and yaw.
+
+At the menu, test Gun/confirm, MSL/back and the mapped hat directions. In flight,
+check pitch, roll, yaw and throttle endpoints. In a mission with targets, check
+Target, Weapon, Gun and MSL. Also check View and both camera directions.
+Pause briefly between tests and quit normally afterward.
+
+The stock X56 profiles have context-dependent aliases: Gun also confirms menus,
+MSL also backs out, and DPad directions share hat channels. This build preserves
+those aliases; it does not provide 49 independent action assignments.
+
+7. LOGS AND OPTIONAL CAPTURE
+
+Each launch creates ac8-compat-<PID>-<QPC>.log beside dinput8.dll. An inherited
+AC8_DI_LOG environment variable overrides the destination.
+Check Compatibility version=2 build=0.2.0-experimental enabled=1,
+then ready=1 and game_format=1 for
+roles 1 (stick) and 2 (throttle). PhysicalState lists one-based source buttons;
+State272 shows the translated buffer's zero-based button indices.
+Compatibility rejected or ready=0 explains why a device was not translated.
+The log may contain input/device identity information; review it before sharing.
+
+For troubleshooting, retain the log and describe the physical input and visible
+game response. Logs can contain device identities; review before sharing.
+Game updates may require a new release. No live config reload or tested
+anchor reconnect support is implemented. Additional-device recovery is
+attempted, but real hardware validation is pending. See MULTI-DEVICE.txt.
+
+8. RESTORE NORMAL PROTECTED PLAY
+
+Quit AC8. Remove our dinput8.dll from the game folder, or restore a known-clean
+original if the game originally shipped one. Do not restore our old observer
+DLL as a way to return to protected play: it is also an in-process proxy.
+Remove/disable UE4SS and any other research DLL loaders as appropriate.
+If you installed our TM bridge proxy, restore the untouched original bridge
+under tm_api_lib_bridge_x64.dll; the renamed original is
+tm_api_lib_bridge_original_x64.dll. Leave tm_api_lib_x64.dll original.
+
+Restore your previous Steam launch options or clear our offline command.
+The extra offline JSON and INI are not needed for normal launching. Steam's
+Verify integrity can restore shipped files, but may leave extra mod DLLs behind;
+remove those separately. Only then return to protected/online launching.
+
+These notes document manual setup. No files were deployed, no Steam options
+were changed, and no EAC/game settings were modified while writing this guide.

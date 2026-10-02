@@ -1,0 +1,5 @@
+build/
+dist/
+controllers.txt
+*.log
+AC8InputMapper.ini
