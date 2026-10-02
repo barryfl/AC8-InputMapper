@@ -27,7 +27,7 @@ The current build maps those inputs onto AC8's native X56 control channels. Stoc
 ## Quick start
 
 1. Read **[SETUP.md](SETUP.md)** before installing.
-2. Run `tools\List-Controllers.cmd` from the release package to find each controller's DirectInput **InstanceGUID**.
+2. Run `List-Controllers.cmd` from the release package to find each controller's DirectInput **InstanceGUID**.
 3. Configure your devices and named actions in `AC8HOTAS.ini`.
 4. Copy only `dinput8.dll` and `AC8HOTAS.ini` into:
    `Game\Binaries\Win64`
@@ -85,4 +85,4 @@ Copyright © 2026 Fred Barry.
 
 ---
 
-Created by **Fred Barry**. I do, and write about Computer Security, https://www.amazon.com/Cybersecurity-Everyday-Life-Computer-Security-ebook/dp/B0H61FWMCD/ref=sr_1_1?s=books&sr=1-1. If that's not your speed, I also write fantasy as **F. Lee Cooper** — [fleecooper.just-serendipity.com](https://fleecooper.just-serendipity.com).
+Created by **Fred Barry**, author of *[Cybersecurity for Everyday Life](https://www.amazon.com/dp/B0H61FWMCD)*. I also write fantasy as **F. Lee Cooper** — [fleecooper.just-serendipity.com](https://fleecooper.just-serendipity.com).
